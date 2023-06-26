@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"github.com/gpabois/goservice/flow"
 	"github.com/gpabois/gostd/result"
 )
 
@@ -10,8 +11,8 @@ type Middleware[Input any, Output any] interface {
 	Connect(right Middleware[Output, Output]) Middleware[Input, Output]
 }
 
-type IsoMiddleware[T any] interface {
-	Middleware[T, T]
+type FlowMiddleware interface {
+	Middleware[flow.Flow, flow.Flow]
 }
 
 func Connect[Input any, Bridge any, Output any](m1 Middleware[Input, Bridge], m2 Middleware[Bridge, Output]) Middleware[Input, Output] {
