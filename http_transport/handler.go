@@ -1,12 +1,16 @@
 package http_transport
 
 import (
+	"context"
+	"errors"
+	"io"
 	"net/http"
 
 	"github.com/gpabois/goservice/endpoint"
 	"github.com/gpabois/goservice/flow"
 	"github.com/gpabois/goservice/middlewares"
 	"github.com/gpabois/gostd/option"
+	"github.com/gpabois/gostd/result"
 	"github.com/gpabois/gostd/serde"
 )
 
@@ -31,26 +35,41 @@ func (res HttpResult[T]) Failed(err error, code option.Option[int]) HttpResult[T
 	return HttpResult[T]{}
 }
 
-// Write the error
-func WriteError[Response any](err error, w http.ResponseWriter, r *http.Request) {
+func WriteResult(res result.Result[any], w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Accept")
 
 	if contentType == "" {
 		contentType = "application/json"
 	}
 
-	switch err.(type) {
-	case serde.UnhandledContentType:
-		w.WriteHeader(415)
-		contentType = "application/json"
-	case serde.DeserializeError:
-		w.WriteHeader(400)
-	default:
-		w.WriteHeader(500)
+	if res.HasFailed() {
+		err := HttpError_From(res.UnwrapError())
+		w.WriteHeader(err.Code())
+
+		w.Header().Set("Content-Type", contentType)
+		encodedRes := serde.Serialize(HttpResult[any]{Error: err.Error()}, contentType)
+
+		// Fallback, write the error as text/plain
+		if encodedRes.HasFailed() {
+			w.Header().Set("Content-Type", "text/plain")
+			w.Write([]byte(err.Error()))
+		}
+
+		return
 	}
 
-	encodedRes := serde.Serialize(HttpResult[Response]{Error: err.Error()}, contentType)
-	w.Write(encodedRes.Expect())
+	anyResp := res.Expect()
+	switch resp := anyResp.(type) {
+	case endpoint.StreamMedia:
+		w.Header().Set("Content-Type", resp.MimeType)
+		io.Copy(w, resp.Stream)
+	default:
+		res := serde.Serialize(r, contentType)
+		if res.HasFailed() {
+			WriteResult(res.ToAny(), w, r)
+		}
+		w.Write(res.Expect())
+	}
 }
 
 func (h *Handler[Request, Response]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -58,14 +77,18 @@ func (h *Handler[Request, Response]) ServeHTTP(w http.ResponseWriter, r *http.Re
 	in = Flow_SetHttpRequest(in, r)
 
 	incomingResult := h.incoming.Intercept(in)
-
-	// The interception has failed, we don't know why
 	if incomingResult.HasFailed() {
-		WriteError[Response](incomingResult.UnwrapError(), w, r)
+		WriteResult(incomingResult.ToAny(), w, r)
 		return
-	} else {
-		endpointRequestOpt := endpoint.Flow_GetEndpointRequest[Request](incomingResult.Expect())
-
 	}
 
+	endpointRequestRes := endpoint.Flow_GetEndpointRequest[Request](incomingResult.Expect()).IntoResult(NewInternalServerError(errors.New("missing endpoint request")))
+	if endpointRequestRes.HasFailed() {
+		WriteResult(endpointRequestRes.ToAny(), w, r)
+		return
+	}
+
+	endpointRequest := endpointRequestRes.Expect()
+	endpointRespRes := h.endpoint.Process(context.Background(), endpointRequest)
+	WriteResult(endpointRespRes.ToAny(), w, r)
 }
