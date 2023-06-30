@@ -1,13 +1,14 @@
-package middlewares_tests
+package http_middlewares_tests
 
 import (
 	"errors"
 	"testing"
 
 	"github.com/gpabois/goservice/endpoint"
+	"github.com/gpabois/goservice/endpoint/endpoint_middlewares"
 	"github.com/gpabois/goservice/flow"
 	"github.com/gpabois/goservice/http_transport"
-	http_middlewares "github.com/gpabois/goservice/http_transport/middlewares"
+	"github.com/gpabois/goservice/http_transport/http_middlewares"
 	"github.com/gpabois/goservice/middlewares"
 	"github.com/stretchr/testify/assert"
 )
@@ -20,7 +21,7 @@ func Test_DeserializeBody(t *testing.T) {
 	in = http_transport.Flow_SetHttpRequest(in, r)
 
 	m := middlewares.Chain[flow.Flow](
-		http_middlewares.DefineEndpointRequest[endpointRequest](),
+		endpoint_middlewares.DefineEndpointRequest[endpointRequest](),
 		http_middlewares.DeserializeBody[endpointRequest](),
 	)
 

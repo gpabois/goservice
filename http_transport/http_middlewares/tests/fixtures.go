@@ -1,4 +1,4 @@
-package middlewares_tests
+package http_middlewares_tests
 
 import (
 	"bytes"
@@ -10,6 +10,12 @@ import (
 
 type endpointRequest struct {
 	Value bool `serde:"value"`
+}
+
+func NewHttpRequestFixture() *http.Request {
+	var buf bytes.Buffer
+	r := result.From(http.NewRequest("GET", "goservice.local", &buf)).Expect()
+	return &r
 }
 
 func NewHttpRequestFixtureWithBody[T any](body T) *http.Request {

@@ -1,4 +1,4 @@
-package middlewares
+package http_middlewares
 
 import (
 	"regexp"
@@ -23,7 +23,7 @@ type TokenRetrieveArgs struct {
 
 // Retrieve raw token from http request
 func RetrieveRawToken(args TokenRetrieveArgs) middlewares.FlowMiddleware {
-	bearerRegex := regexp.MustCompile("^Bearer[ ]+(?P<raw_token>[[:alnum:]]|.)+$")
+	bearerRegex := regexp.MustCompile("^Bearer[ ]+(?P<raw_token>[-A-Za-z0-9_|.]+)$")
 	headerName := args.HeaderName.UnwrapOr(func() string { return "Authorization" })
 	name := args.Name.UnwrapOr(func() string { return "0" })
 	args.Strategy.UnwrapOr(func() int { return BearerStrategy })
