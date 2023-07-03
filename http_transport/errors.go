@@ -1,12 +1,19 @@
 package http_transport
 
-import "github.com/gpabois/gostd/serde"
+import (
+	"github.com/gpabois/goservice/auth"
+	"github.com/gpabois/gostd/serde"
+)
 
 // Convert the error
 func HttpError_From(err error) HttpError {
 	switch err.(type) {
 	case HttpError:
 		return err.(HttpError)
+	case auth.UnsupportedAuthentication, auth.UnexpectedAuthenticationStrategyError:
+		return NewBadRequestError(err)
+	case auth.FailedAuthenticationError:
+		return NewUnauthorizedError(err)
 	case serde.UnhandledContentType:
 		return NewUnsupportedMediaTypeError(err)
 	case serde.DeserializeError:
@@ -82,5 +89,21 @@ func (err BadRequestError) Code() int {
 }
 
 func NewBadRequestError(err error) HttpError {
-	return UnsupportedMediaTypeError{inner: err}
+	return BadRequestError{inner: err}
+}
+
+type UnauthorizedError struct {
+	inner error
+}
+
+func (err UnauthorizedError) Error() string {
+	return err.inner.Error()
+}
+
+func (err UnauthorizedError) Code() int {
+	return 401
+}
+
+func NewUnauthorizedError(err error) HttpError {
+	return UnauthorizedError{inner: err}
 }

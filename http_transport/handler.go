@@ -90,5 +90,6 @@ func (h *Handler[Request, Response]) ServeHTTP(w http.ResponseWriter, r *http.Re
 
 	endpointRequest := endpointRequestRes.Expect()
 	endpointRespRes := h.endpoint.Process(context.Background(), endpointRequest)
+	// Write the result of the endpoint processing
 	WriteResult(endpointRespRes.ToAny(), w, r)
 }

@@ -7,7 +7,18 @@ import (
 	"github.com/gpabois/gostd/option"
 )
 
-const subjectPattern = "Subjet.%s"
+const strategyPattern = "Auth.%s.Strategy"
+const subjectPattern = "Auth.%s.Subject"
+
+func Flow_SetAuthenticationStrategy(in flow.Flow, strategy AuthenticationStrategy, name string) flow.Flow {
+	in[fmt.Sprintf(strategyPattern, name)] = strategy
+	return in
+}
+
+func Flow_GetAuthenticationStrategy(in flow.Flow, name string) option.Option[AuthenticationStrategy] {
+	return flow.Lookup[AuthenticationStrategy](fmt.Sprintf(strategyPattern, name), in)
+
+}
 
 func Flow_SetSubject(in flow.Flow, subject any, name string) flow.Flow {
 	in[fmt.Sprintf(subjectPattern, name)] = subject

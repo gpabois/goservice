@@ -5,8 +5,9 @@ import (
 	"github.com/gpabois/gostd/option"
 )
 
-func Flow_SetEndpointRequest(in flow.Flow, endpointRequest any) {
+func Flow_SetEndpointRequest(in flow.Flow, endpointRequest any) flow.Flow {
 	in["Endpoint.Request"] = endpointRequest
+	return in
 }
 
 func Flow_GetEndpointRequest[T any](in flow.Flow) option.Option[T] {
