@@ -4,39 +4,47 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gpabois/goservice/auth"
 	"github.com/gpabois/gostd/result"
+	"github.com/gpabois/gostd/serde/decoder"
+	"github.com/gpabois/gostd/serde/norm"
 )
 
-type JWTArgs[Subject any, Claims jwt.Claims] struct {
-	ExtractSubject func(claims Claims) Subject
-	KeyFunc        jwt.Keyfunc
+type JWTArgs struct {
+	KeyFunc jwt.Keyfunc
 }
 
 // Handles JWT-based authentication
-type JWT[Subject any, Claims jwt.Claims] struct {
-	JWTArgs[Subject, Claims]
+type JWT[Subject any] struct {
+	JWTArgs
 }
 
-func NewJWT[Subject any, Claims jwt.Claims](args JWTArgs[Subject, Claims]) IAuthenticationService[Subject] {
-	return &JWT[Subject, Claims]{
+func NewJWT[Subject any](args JWTArgs) IAuthenticationService[Subject] {
+	return &JWT[Subject]{
 		JWTArgs: args,
 	}
 }
 
-func (s *JWT[Subject, Claims]) Authenticate(strategy auth.AuthenticationStrategy) result.Result[Subject] {
-	var claims Claims
-
+func (s *JWT[Subject]) Authenticate(strategy auth.AuthenticationStrategy) result.Result[Subject] {
+	var subject Subject
 	// Only support Bearer auth scheme
 	if strategy.Scheme != auth.Bearer {
 		return result.Failed[Subject](auth.NewUnexpectedAuthenticationStrategy(auth.Bearer, strategy.Scheme))
 	}
 
 	rawToken := strategy.Credentials
-	tokenResult := result.From(jwt.ParseWithClaims(rawToken, claims, s.KeyFunc))
-	if tokenResult.HasFailed() {
-		return result.Result[Subject]{}.Failed(auth.NewFailedAuthenticationError(tokenResult.UnwrapError()))
+
+	tok, err := jwt.ParseWithClaims(rawToken, jwt.MapClaims{}, s.KeyFunc)
+	if err != nil {
+		return result.Result[Subject]{}.Failed(auth.NewFailedAuthenticationError(err))
 	}
 
-	tok := tokenResult.Expect()
-	claims = tok.Claims.(Claims)
-	return result.Success(s.ExtractSubject(claims))
+	// Decode claims map into the claims
+	mapClaims := tok.Claims.(jwt.MapClaims)
+	d := norm.NewDecoder(mapClaims)
+
+	res := decoder.DecodeInto(d, &subject)
+	if res.HasFailed() {
+		return result.Result[Subject]{}.Failed(res.UnwrapError())
+	}
+
+	return result.Success(subject)
 }

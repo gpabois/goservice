@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/gorilla/mux v1.8.0
-	github.com/gpabois/gostd v0.0.5
+	github.com/gpabois/gostd v0.0.7
 	github.com/stretchr/testify v1.8.0
 )
 

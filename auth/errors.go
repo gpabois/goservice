@@ -37,5 +37,5 @@ func NewFailedAuthenticationError(inner error) error {
 }
 
 func (err FailedAuthenticationError) Error() string {
-	return fmt.Sprintf("authentication failed")
+	return fmt.Sprintf("authentication failed: %s", err.inner)
 }
