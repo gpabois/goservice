@@ -14,6 +14,10 @@ type JWTArgs struct {
 	KeyFunc jwt.Keyfunc
 }
 
+type JWTKeyStrategy interface {
+	GetKey(tok *jwt.Token) result.Result[any]
+}
+
 // Handles JWT-based authentication
 type JWT[Subject any] struct {
 	JWTArgs
