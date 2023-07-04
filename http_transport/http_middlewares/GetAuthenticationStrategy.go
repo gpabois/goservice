@@ -3,7 +3,7 @@ package http_middlewares
 import (
 	"github.com/gpabois/goservice/auth"
 	"github.com/gpabois/goservice/flow"
-	"github.com/gpabois/goservice/http_transport"
+	http_flow "github.com/gpabois/goservice/http_transport/flow"
 	"github.com/gpabois/goservice/middlewares"
 	"github.com/gpabois/gostd/option"
 	"github.com/gpabois/gostd/result"
@@ -19,12 +19,12 @@ type GetAuthenticationStrategyArgs struct {
 }
 
 // Get the authentication strategy from the http request
-func GetAuthenticationStrategy(args GetAuthenticationStrategyArgs) middlewares.FlowMiddleware {
+func GetAuthenticationStrategy(args GetAuthenticationStrategyArgs) middlewares.Middleware {
 	headerName := args.Header.UnwrapOr(func() string { return "Authorization" })
 	name := args.Name.UnwrapOr(func() string { return "0" })
 
 	return middlewares.ByFunc(func(in flow.Flow) result.Result[flow.Flow] {
-		r := http_transport.Flow_GetHttpRequest(in)
+		r := http_flow.Flow_GetHttpRequest(in)
 
 		var header string
 		if header = r.Header.Get(headerName); header == "" {
@@ -38,5 +38,5 @@ func GetAuthenticationStrategy(args GetAuthenticationStrategyArgs) middlewares.F
 
 		in = auth.Flow_SetAuthenticationStrategy(in, getAuthStratRes.Expect(), name)
 		return result.Success(in)
-	})
+	}, 200)
 }

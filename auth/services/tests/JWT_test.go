@@ -21,7 +21,7 @@ type subject struct {
 func Test_JWT(t *testing.T) {
 	key := []byte("mySigningKey")
 	expectedValue := subject{Id: 10}
-	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims{SubjectId: 10}).SignedString(key)
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims{SubjectId: int(10)}).SignedString(key)
 	assert.Nil(t, err, err)
 
 	strategy := auth.NewBearer(token)

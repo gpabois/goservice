@@ -15,7 +15,7 @@ type AuthenticateArgs[Subject any] struct {
 }
 
 // Authenticate
-func Authenticate[Subject any](args AuthenticateArgs[Subject]) middlewares.FlowMiddleware {
+func Authenticate[Subject any](args AuthenticateArgs[Subject]) middlewares.Middleware {
 	name := args.Name.UnwrapOr(func() string { return "0" })
 	return middlewares.ByFunc(func(in flow.Flow) result.Result[flow.Flow] {
 		strategyOpt := auth.Flow_GetAuthenticationStrategy(in, name)
@@ -35,5 +35,5 @@ func Authenticate[Subject any](args AuthenticateArgs[Subject]) middlewares.FlowM
 		in = auth.Flow_SetSubject(in, subject, name)
 
 		return result.Success(in)
-	})
+	}, 101)
 }

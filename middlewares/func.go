@@ -1,19 +1,23 @@
 package middlewares
 
-import "github.com/gpabois/gostd/result"
+import (
+	"github.com/gpabois/goservice/flow"
+	"github.com/gpabois/gostd/result"
+)
 
-type middlewareFunc[Input any, Output any] struct {
-	inner func(in Input) result.Result[Output]
+type middlewareFunc struct {
+	inner func(flow flow.Flow) result.Result[flow.Flow]
+	order int
 }
 
-func ByFunc[Input any, Output any](fn func(in Input) result.Result[Output]) Middleware[Input, Output] {
-	return middlewareFunc[Input, Output]{inner: fn}
+func ByFunc(fn func(flow flow.Flow) result.Result[flow.Flow], order int) Middleware {
+	return middlewareFunc{inner: fn, order: order}
 }
 
-func (m middlewareFunc[Input, Output]) Intercept(in Input) result.Result[Output] {
-	return m.inner(in)
+func (m middlewareFunc) Intercept(flow flow.Flow) result.Result[flow.Flow] {
+	return m.inner(flow)
 }
 
-func (m middlewareFunc[Input, Output]) Connect(right Middleware[Output, Output]) Middleware[Input, Output] {
-	return Connect[Input, Output](m, right)
+func (m middlewareFunc) Order() int {
+	return m.order
 }

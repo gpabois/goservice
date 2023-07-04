@@ -5,6 +5,7 @@ import (
 
 	"github.com/gpabois/goservice/auth"
 	"github.com/gpabois/goservice/endpoint"
+	endpoint_flow "github.com/gpabois/goservice/endpoint/flow"
 	"github.com/gpabois/goservice/flow"
 	"github.com/gpabois/goservice/middlewares"
 	"github.com/gpabois/gostd/option"
@@ -17,10 +18,10 @@ type InjectSubjectArgs struct {
 }
 
 // Inject authenticated subject into the endpoint request
-func InjectAuthentication[EndpointRequest any, Subject any](args InjectSubjectArgs) middlewares.FlowMiddleware {
+func InjectAuthentication[EndpointRequest any, Subject any](args InjectSubjectArgs) middlewares.Middleware {
 	name := args.Name.UnwrapOr(func() string { return "0" })
 	return middlewares.ByFunc(func(in flow.Flow) result.Result[flow.Flow] {
-		endpointRequestRes := endpoint.Flow_GetEndpointRequest[EndpointRequest](in)
+		endpointRequestRes := endpoint_flow.Flow_GetEndpointRequest[EndpointRequest](in)
 		if endpointRequestRes.IsNone() {
 			return result.Failed[flow.Flow](errors.New("missing endpoint request"))
 		}
@@ -36,7 +37,7 @@ func InjectAuthentication[EndpointRequest any, Subject any](args InjectSubjectAr
 			return result.Result[flow.Flow]{}.Failed(res.UnwrapError())
 		}
 
-		in = endpoint.Flow_SetEndpointRequest(in, endpointRequest)
+		in = endpoint_flow.Flow_SetEndpointRequest(in, endpointRequest)
 		return result.Success(in)
-	})
+	}, 102)
 }

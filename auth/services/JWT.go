@@ -1,6 +1,8 @@
 package auth_services
 
 import (
+	"fmt"
+
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gpabois/goservice/auth"
 	"github.com/gpabois/gostd/result"
@@ -39,6 +41,7 @@ func (s *JWT[Subject]) Authenticate(strategy auth.AuthenticationStrategy) result
 
 	// Decode claims map into the claims
 	mapClaims := tok.Claims.(jwt.MapClaims)
+	fmt.Println(mapClaims)
 	d := norm.NewDecoder(mapClaims)
 
 	res := decoder.DecodeInto(d, &subject)

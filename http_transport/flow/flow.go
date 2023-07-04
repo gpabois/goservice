@@ -1,4 +1,4 @@
-package http_transport
+package http_flow
 
 import (
 	"net/http"
@@ -14,6 +14,15 @@ func Flow_GetHttpRequest(in flow.Flow) *http.Request {
 func Flow_SetHttpRequest(in flow.Flow, req *http.Request) flow.Flow {
 	in["Http.Request"] = req
 	return in
+}
+
+func Flow_SetHttpResponseWriter(in flow.Flow, w http.ResponseWriter) flow.Flow {
+	in["Http.ResponseWriter"] = w
+	return in
+}
+
+func Flow_GetHttpResponseWriter(in flow.Flow, w http.ResponseWriter) http.ResponseWriter {
+	return (flow.Lookup[http.ResponseWriter]("Http.ResponseWriter", in).Expect())
 }
 
 func Flow_SetDeserializedBody(in flow.Flow, decoded any) flow.Flow {

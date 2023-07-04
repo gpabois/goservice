@@ -3,15 +3,13 @@ package http_transport
 import (
 	"context"
 	"errors"
-	"io"
 	"net/http"
 
 	"github.com/gpabois/goservice/endpoint"
+	endpoint_flow "github.com/gpabois/goservice/endpoint/flow"
 	"github.com/gpabois/goservice/flow"
+	http_flow "github.com/gpabois/goservice/http_transport/flow"
 	"github.com/gpabois/goservice/middlewares"
-	"github.com/gpabois/gostd/option"
-	"github.com/gpabois/gostd/result"
-	"github.com/gpabois/gostd/serde"
 )
 
 // Basic handler
@@ -21,75 +19,47 @@ import (
 // Get the endpoint response
 // Intercept outcoming response
 type Handler[EndpointRequest any, EndpointResponse any] struct {
-	endpoint  endpoint.Endpoint[EndpointRequest, EndpointResponse]
-	incoming  middlewares.FlowMiddleware
-	outcoming middlewares.FlowMiddleware
+	endpoint endpoint.Endpoint[EndpointRequest, EndpointResponse]
+	io       middlewares.IO
 }
 
-type HttpResult[T any] struct {
-	Data  option.Option[T]
-	Error string
-}
+func NewHandler[EndpointRequest any, EndpointResponse any](e endpoint.Endpoint[EndpointRequest, EndpointResponse], io middlewares.IO) http.Handler {
+	// Install endpoint plugin automatically
+	endpoint.EndpointPlugin[EndpointRequest, EndpointResponse]{}.Install(&io)
 
-func (res HttpResult[T]) Failed(err error, code option.Option[int]) HttpResult[T] {
-	return HttpResult[T]{}
-}
-
-func WriteResult(res result.Result[any], w http.ResponseWriter, r *http.Request) {
-	contentType := r.Header.Get("Accept")
-
-	if contentType == "" {
-		contentType = "application/json"
-	}
-
-	if res.HasFailed() {
-		err := HttpError_From(res.UnwrapError())
-		w.WriteHeader(err.Code())
-
-		w.Header().Set("Content-Type", contentType)
-		encodedRes := serde.Serialize(HttpResult[any]{Error: err.Error()}, contentType)
-
-		// Fallback, write the error as text/plain
-		if encodedRes.HasFailed() {
-			w.Header().Set("Content-Type", "text/plain")
-			w.Write([]byte(err.Error()))
-		}
-
-		return
-	}
-
-	anyResp := res.Expect()
-	switch resp := anyResp.(type) {
-	case endpoint.StreamMedia:
-		w.Header().Set("Content-Type", resp.MimeType)
-		io.Copy(w, resp.Stream)
-	default:
-		res := serde.Serialize(r, contentType)
-		if res.HasFailed() {
-			WriteResult(res.ToAny(), w, r)
-		}
-		w.Write(res.Expect())
+	return &Handler[EndpointRequest, EndpointResponse]{
+		endpoint: e,
+		io:       io,
 	}
 }
 
 func (h *Handler[Request, Response]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	in := flow.Flow{}
-	in = Flow_SetHttpRequest(in, r)
+	f := flow.Flow{}
+	// Set the http request
+	f = http_flow.Flow_SetHttpRequest(f, r)
 
-	incomingResult := h.incoming.Intercept(in)
+	incomingResult := h.io.Incoming.Intercept(f)
 	if incomingResult.HasFailed() {
 		WriteResult(incomingResult.ToAny(), w, r)
 		return
 	}
 
-	endpointRequestRes := endpoint.Flow_GetEndpointRequest[Request](incomingResult.Expect()).IntoResult(NewInternalServerError(errors.New("missing endpoint request")))
+	endpointRequestRes := endpoint_flow.Flow_GetEndpointRequest[Request](incomingResult.Expect()).IntoResult(NewInternalServerError(errors.New("missing endpoint request")))
 	if endpointRequestRes.HasFailed() {
 		WriteResult(endpointRequestRes.ToAny(), w, r)
 		return
 	}
 
 	endpointRequest := endpointRequestRes.Expect()
-	endpointRespRes := h.endpoint.Process(context.Background(), endpointRequest)
-	// Write the result of the endpoint processing
-	WriteResult(endpointRespRes.ToAny(), w, r)
+	endpointRespResult := h.endpoint.Process(context.Background(), endpointRequest)
+
+	f = http_flow.Flow_SetHttpResponseWriter(f, w)
+	f = endpoint_flow.Flow_SetEndpointResult(f, endpointRespResult)
+
+	res := h.io.Outcoming.Intercept(f)
+
+	// Write the error directly, if the outcoming interception failed.
+	if res.HasFailed() {
+		WriteResult(res.ToAny(), w, r)
+	}
 }

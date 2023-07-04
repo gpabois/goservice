@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/gpabois/goservice/endpoint"
 	"github.com/gpabois/goservice/endpoint/endpoint_middlewares"
+	endpoint_flow "github.com/gpabois/goservice/endpoint/flow"
 	"github.com/gpabois/goservice/flow"
 	"github.com/stretchr/testify/assert"
 )
@@ -19,7 +19,7 @@ func Test_DefineEndpointRequest(t *testing.T) {
 	assert.True(t, inRes.IsSuccess(), inRes.UnwrapError())
 
 	in = inRes.Expect()
-	endpointRequestRes := endpoint.Flow_GetEndpointRequest[endpointRequest](in).IntoResult(errors.New("missing endpoint request"))
+	endpointRequestRes := endpoint_flow.Flow_GetEndpointRequest[endpointRequest](in).IntoResult(errors.New("missing endpoint request"))
 
 	assert.True(t, endpointRequestRes.IsSuccess(), endpointRequestRes.UnwrapError())
 }
