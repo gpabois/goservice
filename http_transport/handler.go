@@ -6,6 +6,7 @@ import (
 	"github.com/gpabois/goservice/chain"
 	"github.com/gpabois/goservice/flow"
 	http_flow "github.com/gpabois/goservice/http_transport/flow"
+	http_helpers "github.com/gpabois/goservice/http_transport/helpers"
 	http_modules "github.com/gpabois/goservice/http_transport/modules"
 )
 
@@ -19,9 +20,9 @@ type Handler struct {
 	chain chain.Chain
 }
 
-func NewHandler(ch chain.Chain) http.Handler {
+func NewHandler(ch chain.Chain, args http_modules.HttpModuleArgs) http.Handler {
 	// Install http module
-	ch = ch.Install(http_modules.HttpModule{})
+	ch = ch.Install(http_modules.NewHttpModule(args))
 	return &Handler{chain: ch}
 }
 
@@ -37,6 +38,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Write the error directly, if the chaining did not catch the error
 	if res.HasFailed() {
-		WriteResult(res.ToAny(), w, r)
+		http_helpers.WriteResult(res.ToAny(), w, r)
 	}
 }

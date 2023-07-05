@@ -6,6 +6,7 @@ import (
 )
 
 //go:generate mockery
-type IAuthenticationService[Subject any] interface {
-	Authenticate(strategy auth.AuthenticationStrategy) result.Result[Subject]
+type IAuthenticationService interface {
+	// Authenticate only, returns a product of the authentication (claims if JWT for instance, ...)
+	Authenticate(strategy auth.AuthenticationStrategy) result.Result[any]
 }

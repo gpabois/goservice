@@ -25,7 +25,7 @@ func Test_JWT(t *testing.T) {
 	assert.Nil(t, err, err)
 
 	strategy := auth.NewBearer(token)
-	s := auth_services.NewJWT[subject](auth_services.JWTArgs{
+	s := auth_services.NewJWT(auth_services.JWTArgs{
 		KeyFunc: func(_ *jwt.Token) (any, error) { return key, nil },
 	})
 

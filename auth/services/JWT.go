@@ -1,7 +1,7 @@
 package auth_services
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gpabois/goservice/auth"
@@ -14,44 +14,38 @@ type JWTArgs struct {
 	KeyFunc jwt.Keyfunc
 }
 
-type JWTKeyStrategy interface {
-	GetKey(tok *jwt.Token) result.Result[any]
-}
-
 // Handles JWT-based authentication
-type JWT[Subject any] struct {
+type JWT struct {
 	JWTArgs
 }
 
-func NewJWT[Subject any](args JWTArgs) IAuthenticationService[Subject] {
-	return &JWT[Subject]{
-		JWTArgs: args,
-	}
+func NewJWT(args JWTArgs) IAuthenticationService {
+	return &JWT{JWTArgs: args}
 }
 
-func (s *JWT[Subject]) Authenticate(strategy auth.AuthenticationStrategy) result.Result[Subject] {
-	var subject Subject
+func ExtractSubjectFromClaims(claims any, subject any) result.Result[bool] {
+	mapClaims, ok := claims.(jwt.MapClaims)
+	if !ok {
+		return result.Result[bool]{}.Failed(errors.New("not claims"))
+	}
+	d := norm.NewDecoder(mapClaims)
+	return decoder.Reflect_DecodeInto(d, subject)
+}
+
+func (s *JWT) Authenticate(strategy auth.AuthenticationStrategy) result.Result[any] {
 	// Only support Bearer auth scheme
 	if strategy.Scheme != auth.Bearer {
-		return result.Failed[Subject](auth.NewUnexpectedAuthenticationStrategy(auth.Bearer, strategy.Scheme))
+		return result.Failed[any](auth.NewUnexpectedAuthenticationStrategy(auth.Bearer, strategy.Scheme))
 	}
 
 	rawToken := strategy.Credentials
 
 	tok, err := jwt.ParseWithClaims(rawToken, jwt.MapClaims{}, s.KeyFunc)
 	if err != nil {
-		return result.Result[Subject]{}.Failed(auth.NewFailedAuthenticationError(err))
+		return result.Result[any]{}.Failed(auth.NewFailedAuthenticationError(err))
 	}
 
-	// Decode claims map into the claims
 	mapClaims := tok.Claims.(jwt.MapClaims)
-	fmt.Println(mapClaims)
-	d := norm.NewDecoder(mapClaims)
 
-	res := decoder.DecodeInto(d, &subject)
-	if res.HasFailed() {
-		return result.Result[Subject]{}.Failed(res.UnwrapError())
-	}
-
-	return result.Success(subject)
+	return result.Success[any](mapClaims)
 }

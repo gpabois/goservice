@@ -9,6 +9,7 @@ import (
 )
 
 type endpointRequest struct {
+	Id    int  `serde:"id"`
 	Value bool `serde:"value"`
 }
 

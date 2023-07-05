@@ -11,11 +11,10 @@ import (
 // Recover from panic and returns a FailedResult
 // Order : 2
 func CatchPanic() chain.Link {
-	return chain.ByFunc(func(flo flow.Flow, next chain.NextFunc) chain.Result {
-		var ret *chain.Result
-		defer catchPanic(ret)
-		*ret = next(flo)
-		return *ret
+	return chain.ByFunc(func(flo flow.Flow, next chain.NextFunc) (ret chain.Result) {
+		defer catchPanic(&ret)
+		ret = next(flo)
+		return ret
 	}, 2)
 }
 

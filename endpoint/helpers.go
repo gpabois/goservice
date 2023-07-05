@@ -6,10 +6,10 @@ import (
 	"github.com/gpabois/gostd/serde/norm"
 )
 
-func Inject[T any](dest *T, values map[string]any) result.Result[bool] {
+func Reflect_Inject(dest any, values map[string]any) result.Result[bool] {
 	// Decode the normalised map into the endpoint request
 	d := norm.NewDecoder(values)
-	res := decoder.DecodeInto(d, dest)
+	res := decoder.Reflect_DecodeInto(d, dest)
 	if res.HasFailed() {
 		return result.Result[bool]{}.Failed(res.UnwrapError())
 	}
