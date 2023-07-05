@@ -30,5 +30,5 @@ func CallEndpoint[Request any, Response any](e endpoint.Endpoint[Request, Respon
 		flo = endpoint_flow.SetEndpointResponse(flo, resp.Expect())
 
 		return next(flo)
-	}, 1000)
+	}, 400)
 }
