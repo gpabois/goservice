@@ -1,4 +1,4 @@
-package http_transport
+package http_errors
 
 import (
 	"github.com/gpabois/goservice/auth"
@@ -6,7 +6,7 @@ import (
 )
 
 // Convert the error
-func HttpError_From(err error) HttpError {
+func From(err error) HttpError {
 	switch err.(type) {
 	case HttpError:
 		return err.(HttpError)

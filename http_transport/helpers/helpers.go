@@ -1,10 +1,11 @@
-package http_transport
+package http_helpers
 
 import (
 	"io"
 	"net/http"
 
 	"github.com/gpabois/goservice/endpoint"
+	http_errors "github.com/gpabois/goservice/http_transport/errors"
 	"github.com/gpabois/gostd/option"
 	"github.com/gpabois/gostd/result"
 	"github.com/gpabois/gostd/serde"
@@ -27,7 +28,7 @@ func WriteResult(res result.Result[any], w http.ResponseWriter, r *http.Request)
 	}
 
 	if res.HasFailed() {
-		err := HttpError_From(res.UnwrapError())
+		err := http_errors.From(res.UnwrapError())
 		w.WriteHeader(err.Code())
 
 		w.Header().Set("Content-Type", contentType)
