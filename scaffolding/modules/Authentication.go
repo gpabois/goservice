@@ -1,4 +1,4 @@
-package auth_scaffolding
+package modules_scaffolding
 
 import (
 	auth_links "github.com/gpabois/goservice/auth/links"
@@ -8,7 +8,7 @@ import (
 	"github.com/gpabois/gostd/option"
 )
 
-func ScaffoldAuthentication(name string, service auth_services.IAuthenticationService, options ...utils.Configurator[auth_modules.AuthenticationArgs]) auth_modules.AuthenticationModule {
+func Authentication(name string, service auth_services.IAuthenticationService, options ...utils.Configurator[auth_modules.AuthenticationArgs]) auth_modules.AuthenticationModule {
 	args := auth_modules.AuthenticationArgs{}
 	args.Authenticate.Name = option.Some(name)
 	args.Authenticate.Service = service

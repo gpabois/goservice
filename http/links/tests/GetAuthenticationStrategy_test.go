@@ -9,8 +9,8 @@ import (
 	auth_flow "github.com/gpabois/goservice/auth/flow"
 	"github.com/gpabois/goservice/chain"
 	"github.com/gpabois/goservice/flow"
-	http_flow "github.com/gpabois/goservice/http_transport/flow"
-	http_links "github.com/gpabois/goservice/http_transport/links"
+	http_flow "github.com/gpabois/goservice/http/flow"
+	http_links "github.com/gpabois/goservice/http/links"
 	"github.com/gpabois/gostd/option"
 	"github.com/stretchr/testify/assert"
 )

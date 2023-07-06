@@ -38,6 +38,9 @@ func (chain Chain) Link(lnk Link) Chain {
 	return chain
 }
 
-func (chain Chain) Install(mod Module) Chain {
-	return mod.Install(chain)
+func (chain Chain) Install(mods ...Module) Chain {
+	for _, mod := range mods {
+		chain = mod.Install(chain)
+	}
+	return chain
 }

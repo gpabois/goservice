@@ -5,9 +5,8 @@ import (
 
 	"github.com/gpabois/goservice/chain"
 	"github.com/gpabois/goservice/flow"
-	http_flow "github.com/gpabois/goservice/http_transport/flow"
-	http_helpers "github.com/gpabois/goservice/http_transport/helpers"
-	http_modules "github.com/gpabois/goservice/http_transport/modules"
+	http_flow "github.com/gpabois/goservice/http/flow"
+	http_helpers "github.com/gpabois/goservice/http/helpers"
 )
 
 // Basic handler
@@ -20,9 +19,7 @@ type Handler struct {
 	chain chain.Chain
 }
 
-func NewHandler(ch chain.Chain, args http_modules.HttpModuleArgs) http.Handler {
-	// Install http module
-	ch = ch.Install(http_modules.NewHttpModule(args))
+func NewHandler(ch chain.Chain) http.Handler {
 	return &Handler{chain: ch}
 }
 

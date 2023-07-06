@@ -8,8 +8,8 @@ import (
 	"github.com/gpabois/goservice/chain"
 	endpoint_flow "github.com/gpabois/goservice/endpoint/flow"
 	"github.com/gpabois/goservice/flow"
-	http_flow "github.com/gpabois/goservice/http_transport/flow"
-	http_links "github.com/gpabois/goservice/http_transport/links"
+	http_flow "github.com/gpabois/goservice/http/flow"
+	http_links "github.com/gpabois/goservice/http/links"
 	"github.com/stretchr/testify/assert"
 )
 

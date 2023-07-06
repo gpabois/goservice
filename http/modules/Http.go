@@ -7,24 +7,24 @@ import (
 	"github.com/gpabois/gostd/option"
 )
 
-type HttpModuleArgs struct {
-	EnableDeserializeBody   option.Option[http_links.ReflectDeserializeBodyArgs]
-	EnableInjectRouteParams bool
-	EnableAuthentication    option.Option[http_links.GetAuthenticationStrategyArgs]
+type HttpArgs struct {
+	EnableDeserializeBody           option.Option[http_links.ReflectDeserializeBodyArgs]
+	EnableInjectRouteParams         bool
+	ExtractAuthenticationStrategies []http_links.GetAuthenticationStrategyArgs
 }
 
-func NewHttpModule(args HttpModuleArgs) HttpModule {
-	return HttpModule{
-		HttpModuleArgs: args,
+func NewHttpModule(args HttpArgs) Http {
+	return Http{
+		HttpArgs: args,
 	}
 }
 
 // Install http module, and control flow module
-type HttpModule struct {
-	HttpModuleArgs
+type Http struct {
+	HttpArgs
 }
 
-func (mod HttpModule) Install(ch chain.Chain) chain.Chain {
+func (mod Http) Install(ch chain.Chain) chain.Chain {
 	ch = ch.
 		Install(control_flow_modules.ControlFlowModule{}).
 		Link(http_links.Lifecycle())
@@ -38,8 +38,7 @@ func (mod HttpModule) Install(ch chain.Chain) chain.Chain {
 		ch = ch.Link(http_links.Reflect_InjectRouteParams())
 	}
 
-	if mod.EnableAuthentication.IsSome() {
-		args := mod.EnableAuthentication.Expect()
+	for _, args := range mod.ExtractAuthenticationStrategies {
 		ch = ch.Link(http_links.GetAuthenticationStrategy(args))
 	}
 
