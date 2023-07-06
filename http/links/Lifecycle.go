@@ -6,8 +6,8 @@ import (
 	"github.com/gpabois/goservice/chain"
 	endpoint_flow "github.com/gpabois/goservice/endpoint/flow"
 	"github.com/gpabois/goservice/flow"
-	http_flow "github.com/gpabois/goservice/http_transport/flow"
-	http_helpers "github.com/gpabois/goservice/http_transport/helpers"
+	http_flow "github.com/gpabois/goservice/http/flow"
+	http_helpers "github.com/gpabois/goservice/http/helpers"
 )
 
 // Handle the lifecycle of the http request/response

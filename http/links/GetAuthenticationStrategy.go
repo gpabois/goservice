@@ -7,7 +7,7 @@ import (
 	auth_flow "github.com/gpabois/goservice/auth/flow"
 	"github.com/gpabois/goservice/chain"
 	"github.com/gpabois/goservice/flow"
-	http_flow "github.com/gpabois/goservice/http_transport/flow"
+	http_flow "github.com/gpabois/goservice/http/flow"
 	"github.com/gpabois/gostd/option"
 	"github.com/gpabois/gostd/result"
 )

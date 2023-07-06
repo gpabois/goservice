@@ -10,7 +10,7 @@ type EndpointModule[Request any, Response any] struct {
 	Endpoint endpoint.Endpoint[Request, Response]
 }
 
-func NewEndpointModule[Request any, Response any](e endpoint.Endpoint[Request, Response]) chain.Module {
+func NewEndpointModule[Request any, Response any](e endpoint.Endpoint[Request, Response]) EndpointModule[Request, Response] {
 	return EndpointModule[Request, Response]{Endpoint: e}
 }
 

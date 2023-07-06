@@ -8,7 +8,7 @@ import (
 
 type SubjectArgs struct {
 	auth_links.ExtractSubjectArgs
-	Inject option.Option[auth_links.InjectSubjectArgs]
+	EnableInjection option.Option[auth_links.InjectSubjectArgs]
 }
 
 type subjectModule struct {
@@ -23,8 +23,8 @@ func (mod subjectModule) Install(ch chain.Chain) chain.Chain {
 	ch = ch.Link(auth_links.ExtractSubject(mod.ExtractSubjectArgs))
 
 	// Inject the subject into the endpoint request
-	if mod.Inject.IsSome() {
-		args := mod.Inject.Expect()
+	if mod.EnableInjection.IsSome() {
+		args := mod.EnableInjection.Expect()
 		ch = ch.Link(auth_links.Reflect_InjectSubject(args))
 	}
 

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gpabois/goservice/endpoint"
-	http_errors "github.com/gpabois/goservice/http_transport/errors"
+	http_errors "github.com/gpabois/goservice/http/errors"
 	"github.com/gpabois/gostd/option"
 	"github.com/gpabois/gostd/result"
 	"github.com/gpabois/gostd/serde"

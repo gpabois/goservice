@@ -1,7 +1,6 @@
 package endpoint_links
 
 import (
-	"context"
 	"errors"
 
 	"github.com/gpabois/goservice/chain"
@@ -20,7 +19,7 @@ func CallEndpoint[Request any, Response any](e endpoint.Endpoint[Request, Respon
 			return chain.Result{}.Failed(req.UnwrapError())
 		}
 
-		resp := e.Process(context.Background(), req.Expect())
+		resp := e.Process(req.Expect())
 
 		if resp.HasFailed() {
 			return chain.Result{}.Failed(resp.UnwrapError())

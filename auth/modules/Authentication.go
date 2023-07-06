@@ -16,7 +16,7 @@ type AuthenticationModule struct {
 	EnableSubject option.Option[SubjectArgs]
 }
 
-func NewAuthenticationModule(args AuthenticationArgs) chain.Module {
+func NewAuthenticationModule(args AuthenticationArgs) AuthenticationModule {
 	return AuthenticationModule{AuthenticationArgs: args}
 }
 

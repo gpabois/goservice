@@ -44,7 +44,6 @@ func (s *JWT) Authenticate(strategy auth.AuthenticationStrategy) result.Result[a
 	if err != nil {
 		return result.Result[any]{}.Failed(auth.NewFailedAuthenticationError(err))
 	}
-
 	mapClaims := tok.Claims.(jwt.MapClaims)
 
 	return result.Success[any](mapClaims)

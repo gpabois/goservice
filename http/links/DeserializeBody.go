@@ -7,7 +7,7 @@ import (
 	"github.com/gpabois/goservice/chain"
 	endpoint_flow "github.com/gpabois/goservice/endpoint/flow"
 	"github.com/gpabois/goservice/flow"
-	http_flow "github.com/gpabois/goservice/http_transport/flow"
+	http_flow "github.com/gpabois/goservice/http/flow"
 	"github.com/gpabois/gostd/option"
 	"github.com/gpabois/gostd/result"
 	"github.com/gpabois/gostd/serde"

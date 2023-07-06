@@ -13,7 +13,7 @@ type MonitoringModule struct {
 	MonitoringModuleArgs
 }
 
-func NewMonitoringModule(args MonitoringModuleArgs) chain.Module {
+func NewMonitoringModule(args MonitoringModuleArgs) MonitoringModule {
 	return MonitoringModule{
 		MonitoringModuleArgs: args,
 	}
