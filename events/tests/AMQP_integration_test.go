@@ -15,7 +15,7 @@ type TestEvent struct {
 }
 
 func Test_AMQP(t *testing.T) {
-	mngr := integration_tests.NewDockerResourcesManager("goservice").Expect()
+	mngr := integration_tests.NewResourcesManager(integration_tests.ResourcesManagerArgs{}).Expect()
 	defer mngr.Cleanup()
 
 	// Create a RabbitMQ instance

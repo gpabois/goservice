@@ -11,6 +11,9 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 )
 
+type ResourcesManagerArgs struct {
+}
+
 type ResourcesManager struct {
 	pool      *dockertest.Pool
 	resources []*dockertest.Resource
@@ -27,8 +30,8 @@ func (mngr *ResourcesManager) Cleanup() result.Result[bool] {
 	return result.Success(true)
 }
 
-func NewResourcesManager(endpoint string) result.Result[*ResourcesManager] {
-	pool, err := dockertest.NewPool(endpoint)
+func NewResourcesManager(args ResourcesManagerArgs) result.Result[*ResourcesManager] {
+	pool, err := dockertest.NewPool("")
 	log.Println("Starting a new docker pool")
 	if err != nil {
 		return result.Result[*ResourcesManager]{}.Failed(err)
