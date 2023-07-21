@@ -57,13 +57,14 @@ func WithRabbitMQ(mngr *DockerResourcesManager, args RabbitMQ_Args) result.Resul
 	res := result.Result[*amqp091.Connection]{}
 
 	if err := mngr.pool.Retry(func() error {
-		conn, err := amqp091.Dial("amqp://localhost:5672")
-		log.Println("Successfuly connected to RabbitMQ at 5672")
+		conn, err := amqp091.Dial("amqp://guest:guest@localhost:5672")
 		res = result.Success(conn)
 		return err
 	}); err != nil {
 		return result.Result[*amqp091.Connection]{}.Failed(err)
 	}
+
+	log.Println("Successfuly connected to RabbitMQ at 5672")
 
 	return res
 }
