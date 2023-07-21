@@ -1,3 +1,6 @@
+//go:build integration
+// +build integration
+
 package events_tests
 
 import (
