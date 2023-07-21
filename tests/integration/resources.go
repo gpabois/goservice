@@ -2,18 +2,21 @@ package integration_tests
 
 import (
 	"log"
+	"time"
 
+	"github.com/goombaio/namegenerator"
 	"github.com/gpabois/gostd/result"
 	"github.com/ory/dockertest/v3"
+	"github.com/ory/dockertest/v3/docker"
 	"github.com/rabbitmq/amqp091-go"
 )
 
-type DockerResourcesManager struct {
+type ResourcesManager struct {
 	pool      *dockertest.Pool
 	resources []*dockertest.Resource
 }
 
-func (mngr *DockerResourcesManager) Cleanup() result.Result[bool] {
+func (mngr *ResourcesManager) Cleanup() result.Result[bool] {
 	for _, res := range mngr.resources {
 		err := mngr.pool.Purge(res)
 		if err != nil {
@@ -24,28 +27,43 @@ func (mngr *DockerResourcesManager) Cleanup() result.Result[bool] {
 	return result.Success(true)
 }
 
-func NewDockerResourcesManager(name string) result.Result[*DockerResourcesManager] {
-	pool, err := dockertest.NewPool("")
+func NewResourcesManager(endpoint string) result.Result[*ResourcesManager] {
+	pool, err := dockertest.NewPool(endpoint)
 	log.Println("Starting a new docker pool")
 	if err != nil {
-		return result.Result[*DockerResourcesManager]{}.Failed(err)
+		return result.Result[*ResourcesManager]{}.Failed(err)
 	}
 
 	err = pool.Client.Ping()
 	if err != nil {
-		return result.Result[*DockerResourcesManager]{}.Failed(err)
+		return result.Result[*ResourcesManager]{}.Failed(err)
 	}
 
 	log.Println("Successfully connected to the docker pool")
-	return result.Success(&DockerResourcesManager{pool: pool})
+	return result.Success(&ResourcesManager{pool: pool})
 }
 
 type RabbitMQ_Args struct{}
 
 const RabbitMQ_DefaultPort = 5672
 
-func WithRabbitMQ(mngr *DockerResourcesManager, args RabbitMQ_Args) result.Result[*amqp091.Connection] {
-	resource, err := mngr.pool.Run("rabbitmq", "latest", []string{})
+func newContainerName() string {
+	seed := time.Now().UTC().UnixNano()
+	nameGenerator := namegenerator.NewNameGenerator(seed)
+	return nameGenerator.Generate()
+}
+
+func WithRabbitMQ(mngr *ResourcesManager, args RabbitMQ_Args) result.Result[*amqp091.Connection] {
+	opts := dockertest.RunOptions{
+		Repository: "rabbitmq",
+		Name:       newContainerName(),
+		Tag:        "latest",
+		PortBindings: map[docker.Port][]docker.PortBinding{
+			"5672/tcp": {{HostIP: "", HostPort: "5672"}},
+		},
+	}
+
+	resource, err := mngr.pool.RunWithOptions(&opts)
 
 	log.Println("Starting a RabbitMQ container")
 	if err != nil {
