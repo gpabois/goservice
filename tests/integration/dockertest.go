@@ -25,7 +25,7 @@ func (mngr *DockerResourcesManager) Cleanup() result.Result[bool] {
 }
 
 func NewDockerResourcesManager(name string) result.Result[*DockerResourcesManager] {
-	pool, err := dockertest.NewPool(name)
+	pool, err := dockertest.NewPool("")
 	log.Println("Starting a new docker pool")
 	if err != nil {
 		return result.Result[*DockerResourcesManager]{}.Failed(err)
