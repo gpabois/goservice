@@ -38,7 +38,7 @@ type AMQP struct {
 }
 
 func NewAMQP(channel *amqp.Channel) *AMQP {
-	return &AMQP{channel: channel}
+	return &AMQP{channel: channel, exchangeBindings: make(map[string]eventExchange), queueBindings: make(map[string]string)}
 }
 
 // Define the exchange which will route the message

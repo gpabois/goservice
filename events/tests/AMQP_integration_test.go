@@ -25,15 +25,24 @@ func Test_AMQP(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
-		// Configure exchange
+		defer channel.Close()
+
+		// Configure exchange, to send our event
 		if err := channel.ExchangeDeclare("exchange.test", "fanout", true, true, false, false, nil); err != nil {
 			panic(err)
 		}
-		defer channel.Close()
+		if err := channel.QueueDeclare("queue.test", false, false, true, false, nil); err != nil {
+			panic(err)
+		}
+		if err := channel.QueueBind("queue.test", "", "exchange.test", false, nil); err != nil {
+			panic(err)
+		}
 
 		ev := events.NewAMQP(channel)
 		ev.ConfigurePublish("test", "exchange.test", "*")
+		ev.ConfigureSubscribe("test", "queue.test")
 		ev.Publish("test", TestEvent{Arg: "Hello world !"})
+		sub := ev.Subscribe("test", "subscriber.test")
 
 		return result.Success(true)
 	})
